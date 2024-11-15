@@ -1,0 +1,16 @@
+{
+    "name": "giroflex-server",
+    "version": "1.0.0",
+    "description": "Servidor para controlar o estado dos giroflexes",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "body-parser": "^1.20.3",
+        "express": "^4.21.1"
+    },
+    "engines": {
+        "node": ">=14"
+    }
+}
