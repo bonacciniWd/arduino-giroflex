@@ -1,59 +1,33 @@
-require('dotenv').config(); // Carrega variáveis de ambiente do arquivo .env
-
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors'); // Suporte para CORS
-
 const app = express();
-const PORT = process.env.PORT || 3000; // Porta do servidor
+const port = process.env.PORT || 3000;
 
-// Estado global para os giroflexes
-let giroflexState = false;
+// Array para armazenar os estados de cada ESP8266
+let devices = {
+  device1: false,
+  device2: false,
+  device3: false
+};
 
-// Middlewares
-app.use(cors()); // Habilita CORS
-app.use(bodyParser.json());
+app.use(express.json());
 
-// Logs de requisições para debug
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
-
-// Rota para alternar o estado do giroflex
-app.post('/toggle', (req, res) => {
-  try {
-    giroflexState = !giroflexState; // Alterna o estado atual
-    console.log(`Estado do giroflex alterado para: ${giroflexState}`);
-    res.status(200).json({ success: true, state: giroflexState });
-  } catch (error) {
-    console.error('Erro ao alternar o estado do giroflex:', error);
-    res.status(500).json({ success: false, error: 'Erro interno no servidor' });
+// Endpoint para alterar o estado do dispositivo
+app.post('/trigger/:device', (req, res) => {
+  const deviceId = req.params.device;
+  
+  if(devices[deviceId] !== undefined) {
+    devices[deviceId] = true;
+    res.status(200).send({ status: 'success', device: deviceId });
+  } else {
+    res.status(404).send({ status: 'error', message: 'Device not found' });
   }
 });
 
-// Rota para obter o estado atual do giroflex
+// Endpoint para verificar o estado dos dispositivos
 app.get('/status', (req, res) => {
-  try {
-    res.status(200).json({ state: giroflexState });
-  } catch (error) {
-    console.error('Erro ao obter o estado do giroflex:', error);
-    res.status(500).json({ success: false, error: 'Erro interno no servidor' });
-  }
+  res.status(200).json(devices);
 });
 
-// Rota padrão para verificar se o servidor está funcionando
-app.get('/', (req, res) => {
-  res.send('Servidor está rodando! 🚀');
-});
-
-// Middleware de erro global
-app.use((err, req, res, next) => {
-  console.error('Erro capturado pelo middleware global:', err);
-  res.status(500).json({ success: false, error: 'Erro interno no servidor' });
-});
-
-// Inicia o servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
